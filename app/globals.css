@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand-driven theme (per Vercel project env vars) */
+    --btn-bg: #212721;
+  --btn-text: #ffffff;
+  --tab-active-bg: #212721;
+  --tab-active-text: #ffffff;--pe-beige: var(--brand-bg, #F1EFE7);
+  --pe-black: var(--brand-text, #212721);
+  --pe-orange: var(--brand-accent, #CAB448);
+  --pe-muted: var(--brand-muted, #F1EFE7);
+
+  /* Card surface */
+  --pe-card: var(--brand-card, rgba(255, 255, 255, 0.65));
+}
+
+html, body {
+  height: 100%;
+}
