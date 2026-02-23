@@ -331,14 +331,13 @@ function findCurrentWeekRow(grid: string[][], now: Date): number | null {
   return nextRow ?? prevRow;
 }
 
-  return NextResponse.json({
+    return NextResponse.json({
     salesGoalAnnual,
     salesYTD,
-    lastYearRevenue,
     percentOfGoal,
-
+    lastYearRevenue,
     conversionRate,
-    
+
     ytdActualRevenue,
     ytdExpectedRevenue,
 
@@ -347,13 +346,13 @@ function findCurrentWeekRow(grid: string[][], now: Date): number | null {
 
     mappedCells: {
       salesGoalAnnual: "C3",
+      percentOfGoal: "C5",
       lastYearRevenue: "C6",
+      salesYTD: "C52",
+      conversionRate: "C16",
+
       ytdActualRevenue: "C57:C64",
       ytdExpectedRevenue: "B57:B64",
-      monthlyRow: "A40:A51 (matched by month name)",
-      weeklyRows: "A57+ (latest date <= today)",
-      monthlyCols: "Revenue B/C, Quotes Count H/J, Quotes Value G/I (assumed)",
-      weeklyCols: "Revenue B/C, Quotes Count H/J, Quotes Value G/I (assumed)",
     },
 
     fetchedAt: new Date().toISOString(),
