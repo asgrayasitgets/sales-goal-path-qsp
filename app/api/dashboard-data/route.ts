@@ -327,12 +327,7 @@ function findCurrentWeekRow(grid: string[][], now: Date): number | null {
       prevRow = r;
     }
   }
-
-  return nextRow ?? prevRow;
-}
-
-export async function GET() {
-  return NextResponse.json({
+ return NextResponse.json({
     salesGoalAnnual,
     salesYTD,
     percentOfGoal,
@@ -358,4 +353,9 @@ export async function GET() {
 
     fetchedAt: new Date().toISOString(),
   });
+  return nextRow ?? prevRow;
+}
+
+export async function GET() {
+ 
 }
