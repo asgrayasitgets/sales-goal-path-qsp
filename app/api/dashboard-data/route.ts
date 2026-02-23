@@ -145,6 +145,52 @@ function findLatestWeekRow(grid: string[][], today: Date): number | null {
 
   return bestRow;
 }
+const WEEKLY_START_ROW = 57;
+const WEEKLY_END_ROW = 109;
+const TIME_ZONE = "America/Edmonton";
+
+function dateKeyInTZ(d: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+
+  const y = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const m = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${y}-${m}-${day}`;
+}
+
+function findCurrentWeekRow(grid: string[][], now: Date): number | null {
+  const todayKey = dateKeyInTZ(now, TIME_ZONE);
+
+  let nextRow: number | null = null;
+  let nextKey: string | null = null;
+
+  let prevRow: number | null = null;
+  let prevKey: string | null = null;
+
+  for (let r = WEEKLY_START_ROW; r <= WEEKLY_END_ROW; r++) {
+    const raw = getCellRC(grid, r, 1);
+    const t = parseDateLoose(raw);
+    if (t == null) continue;
+
+    const k = dateKeyInTZ(new Date(t), TIME_ZONE);
+
+    if (k >= todayKey && (nextKey == null || k < nextKey)) {
+      nextKey = k;
+      nextRow = r;
+    }
+    if (k <= todayKey && (prevKey == null || k > prevKey)) {
+      prevKey = k;
+      prevRow = r;
+    }
+  }
+
+  return nextRow ?? prevRow;
+}
 
 export async function GET() {
   const url = process.env.DASHBOARD_CSV_URL;
@@ -236,7 +282,7 @@ const weekly =
       };
 
   // ----- Weekly (latest week row <= today) -----
-  const weekRow = findCurrentWeekRow(grid, new Date());
+ 
 
   const WEEKLY_START_ROW = 57;
 const WEEKLY_END_ROW = 109;
