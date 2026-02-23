@@ -284,12 +284,7 @@ const weekly =
   // ----- Weekly (latest week row <= today) -----
  
 
-  const WEEKLY_START_ROW = 57;
-const WEEKLY_END_ROW = 109;
-const TIME_ZONE = "America/Edmonton";
-
-// Returns YYYY-MM-DD in Edmonton time (stable comparisons)
-function dateKeyInTZ(d: Date, timeZone: string) {
+ 
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone,
     year: "numeric",
