@@ -213,6 +213,27 @@ export async function GET() {
           },
           sourceRow: monthRow,
         };
+  const weekRow = findCurrentWeekRow(grid, new Date());
+
+const weekly =
+  weekRow == null
+    ? null
+    : {
+        weekEnding: getCellRC(grid, weekRow, 1),
+        revenue: {
+          target: toNumber(getCellRC(grid, weekRow, 2)), // B
+          actual: toNumber(getCellRC(grid, weekRow, 3)), // C
+        },
+        quotesCount: {
+          target: toNumber(getCellRC(grid, weekRow, 8)), // H
+          actual: toNumber(getCellRC(grid, weekRow, 10)), // J
+        },
+        quotesValue: {
+          target: toNumber(getCellRC(grid, weekRow, 7)), // G
+          actual: toNumber(getCellRC(grid, weekRow, 9)), // I
+        },
+        sourceRow: weekRow,
+      };
 
   // ----- Weekly (latest week row <= today) -----
   const weekRow = findCurrentWeekRow(grid, new Date());
