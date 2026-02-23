@@ -331,7 +331,8 @@ function findCurrentWeekRow(grid: string[][], now: Date): number | null {
   return nextRow ?? prevRow;
 }
 
-    return NextResponse.json({
+export async function GET() {
+  return NextResponse.json({
     salesGoalAnnual,
     salesYTD,
     percentOfGoal,
