@@ -249,33 +249,37 @@ export async function GET() {
 
   // ----- Monthly -----
   const today = new Date();
-  const monthNames = [
-    "January","February","March","April","May","June",
-    "July","August","September","October","November","December"
-  ];
-  const currentMonthName = monthNames[today.getMonth()];
-  const monthRow = findMonthRow(grid, currentMonthName);
+  // ----- Monthly (current month in BUSINESS_TIMEZONE) -----
+const { monthName: currentMonthName, monthNumber: currentMonthNumber, year: currentYear } =
+  currentMonthNameInTimeZone(BUSINESS_TIMEZONE);
 
-  const monthly =
-    monthRow == null
-      ? null
-      : {
-          month: currentMonthName,
-          revenue: {
-            target: toNumber(getCellRC(grid, monthRow, 2)), // B
-            actual: toNumber(getCellRC(grid, monthRow, 3)), // C
-          },
-          quotesCount: {
-            target: toNumber(getCellRC(grid, monthRow, 8)),  // H
-            actual: toNumber(getCellRC(grid, monthRow, 10)), // J
-          },
-          quotesValue: {
-            target: toNumber(getCellRC(grid, monthRow, 7)), // G (assumed)
-            actual: toNumber(getCellRC(grid, monthRow, 9)),  // I (assumed)
-          },
-          sourceRow: monthRow,
-        };
+const monthRow = findMonthRow(grid, currentMonthName);
 
+// Column mapping (1-based):
+// Revenue: target=B, actual=C
+// Quotes COUNT: target=H, actual=J
+// Quotes VALUE: target=G (ASSUMED), actual=I (ASSUMED)
+const monthly =
+  monthRow == null
+    ? null
+    : {
+        month: currentMonthName,
+        monthNumber: currentMonthNumber,
+        year: currentYear,
+        revenue: {
+          target: toNumber(getCellRC(grid, monthRow, 2)),
+          actual: toNumber(getCellRC(grid, monthRow, 3)),
+        },
+        quotesCount: {
+          target: toNumber(getCellRC(grid, monthRow, 8)),
+          actual: toNumber(getCellRC(grid, monthRow, 10)),
+        },
+        quotesValue: {
+          target: toNumber(getCellRC(grid, monthRow, 7)), // <-- change if needed
+          actual: toNumber(getCellRC(grid, monthRow, 9)),  // <-- change if needed
+        },
+        sourceRow: monthRow,
+      };
   // ----- Weekly (CURRENT WEEK) -----
   const todayKey = todayKeyInTimeZone(BUSINESS_TIMEZONE);
   const weekRow = findCurrentWeekRow(grid, todayKey);
