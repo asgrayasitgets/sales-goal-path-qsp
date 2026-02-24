@@ -4,7 +4,7 @@ const BUSINESS_TIMEZONE = "America/Edmonton";
 
 // Adjust if your weekly block moves
 const WEEKLY_START_ROW = 57;
-const WEEKLY_END_ROW = 64;
+const WEEKLY_END_ROW = 109;
 
 function csvToGrid(csvText: string): string[][] {
   const rows: string[][] = [];
