@@ -128,22 +128,31 @@ function parseDateLoose(value: string): number | null {
 
 function findLatestWeekRow(grid: string[][], today: Date): number | null {
   const todayT = today.getTime();
-  let bestRow: number | null = null;
-  let bestT = -Infinity;
 
-  // Restrict to the current weekly block (rows 57–64)
+  let nextRow: number | null = null;
+  let nextT = Infinity;
+
+  let prevRow: number | null = null;
+  let prevT = -Infinity;
+
   for (let r = 57; r <= 64; r++) {
-    const raw = getCellRC(grid, r, 1); // col A
+    const raw = getCellRC(grid, r, 1); // col A (week ending)
     const t = parseDateLoose(raw);
     if (t == null) continue;
 
-    if (t <= todayT && t > bestT) {
-      bestT = t;
-      bestRow = r;
+    if (t >= todayT && t < nextT) {
+      nextT = t;
+      nextRow = r;
+    }
+
+    if (t <= todayT && t > prevT) {
+      prevT = t;
+      prevRow = r;
     }
   }
 
-  return bestRow;
+  // Prefer “current week” (next upcoming week ending). Otherwise fall back.
+  return nextRow ?? prevRow;
 }
 
 export async function GET() {
