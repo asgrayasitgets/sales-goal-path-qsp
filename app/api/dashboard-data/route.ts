@@ -6,6 +6,30 @@ const BUSINESS_TIMEZONE = "America/Edmonton";
 const WEEKLY_START_ROW = 57;
 const WEEKLY_END_ROW = 109;
 
+function datePartsInTimeZone(timeZone: string): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const year = Number(parts.find((p) => p.type === "year")?.value);
+  const month = Number(parts.find((p) => p.type === "month")?.value); // 1..12
+  const day = Number(parts.find((p) => p.type === "day")?.value);
+
+  return { year, month, day };
+}
+
+function currentMonthNameInTimeZone(timeZone: string): { monthName: string; monthNumber: number; year: number } {
+  const { year, month } = datePartsInTimeZone(timeZone);
+  const monthNames = [
+    "January","February","March","April","May","June",
+    "July","August","September","October","November","December"
+  ];
+  return { monthName: monthNames[month - 1], monthNumber: month, year };
+}
+
 function csvToGrid(csvText: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
