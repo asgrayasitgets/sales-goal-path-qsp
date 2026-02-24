@@ -223,28 +223,60 @@ export async function GET() {
           sourceRow: monthRow,
         };
 
-  // ----- Weekly (latest week row <= today) -----
-  const weekRow = findLatestWeekRow(grid, today);
+  const WEEKLY_START_ROW = 65; // <-- you said weekly starts at line 65
+const TIME_ZONE = "America/Edmonton";
 
-  const weekly =
-    weekRow == null
-      ? null
-      : {
-          weekEnding: getCellRC(grid, weekRow, 1),
-          revenue: {
-            target: toNumber(getCellRC(grid, weekRow, 2)),
-            actual: toNumber(getCellRC(grid, weekRow, 3)),
-          },
-          quotesCount: {
-            target: toNumber(getCellRC(grid, weekRow, 8)),
-            actual: toNumber(getCellRC(grid, weekRow, 10)),
-          },
-          quotesValue: {
-            target: toNumber(getCellRC(grid, weekRow, 7)),  // <-- change if needed
-            actual: toNumber(getCellRC(grid, weekRow, 9)),   // <-- change if needed
-          },
-          sourceRow: weekRow,
-        };
+// Returns a YYYY-MM-DD string in the given timezone (stable for comparisons)
+function dateKeyInTZ(d: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+
+  const y = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const m = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${y}-${m}-${day}`;
+}
+
+// Find the row for the *current week in progress*:
+// - prefer the earliest week-ending date >= today (Edmonton)
+// - fallback to the latest <= today if none exist
+function findCurrentWeekRow(grid: string[][], now: Date): number | null {
+  const todayKey = dateKeyInTZ(now, TIME_ZONE);
+
+  let nextRow: number | null = null;
+  let nextKey: string | null = null;
+
+  let prevRow: number | null = null;
+  let prevKey: string | null = null;
+
+  for (let r = WEEKLY_START_ROW; r <= grid.length; r++) {
+    const raw = getCellRC(grid, r, 1); // col A (week ending date)
+    if (!raw || raw.trim() === "") break; // stop when weekly table ends
+
+    const t = parseDateLoose(raw);
+    if (t == null) continue;
+
+    const k = dateKeyInTZ(new Date(t), TIME_ZONE);
+
+    // next = earliest >= today
+    if (k >= todayKey && (nextKey == null || k < nextKey)) {
+      nextKey = k;
+      nextRow = r;
+    }
+
+    // prev = latest <= today
+    if (k <= todayKey && (prevKey == null || k > prevKey)) {
+      prevKey = k;
+      prevRow = r;
+    }
+  }
+
+  return nextRow ?? prevRow;
+}
 
   return NextResponse.json({
     salesGoalAnnual,
