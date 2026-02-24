@@ -126,7 +126,8 @@ function parseDateLoose(value: string): number | null {
   return null;
 }
 
-function findLatestWeekRow(grid: string[][], today: Date): number | null {
+
+const weekRow = findCurrentWeekRow(grid, new Date()); number | null {
   const todayT = today.getTime();
 
   let nextRow: number | null = null;
