@@ -126,32 +126,58 @@ function parseDateLoose(value: string): number | null {
   return null;
 }
 
-function findLatestWeekRow(grid: string[][], today: Date): number | null {
-  const todayT = today.getTime();
+const WEEKLY_START_ROW = 65; // <-- you said weekly starts at line 65
+const TIME_ZONE = "America/Edmonton";
+
+// Returns a YYYY-MM-DD string in the given timezone (stable for comparisons)
+function dateKeyInTZ(d: Date, timeZone: string) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(d);
+
+  const y = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const m = parts.find((p) => p.type === "month")?.value ?? "00";
+  const day = parts.find((p) => p.type === "day")?.value ?? "00";
+  return `${y}-${m}-${day}`;
+}
+
+// Find the row for the *current week in progress*:
+// - prefer the earliest week-ending date >= today (Edmonton)
+// - fallback to the latest <= today if none exist
+function findCurrentWeekRow(grid: string[][], now: Date): number | null {
+  const todayKey = dateKeyInTZ(now, TIME_ZONE);
 
   let nextRow: number | null = null;
-  let nextT = Infinity;
+  let nextKey: string | null = null;
 
   let prevRow: number | null = null;
-  let prevT = -Infinity;
+  let prevKey: string | null = null;
 
-  for (let r = 57; r <= 64; r++) {
-    const raw = getCellRC(grid, r, 1); // col A (week ending)
+  for (let r = WEEKLY_START_ROW; r <= grid.length; r++) {
+    const raw = getCellRC(grid, r, 1); // col A (week ending date)
+    if (!raw || raw.trim() === "") break; // stop when weekly table ends
+
     const t = parseDateLoose(raw);
     if (t == null) continue;
 
-    if (t >= todayT && t < nextT) {
-      nextT = t;
+    const k = dateKeyInTZ(new Date(t), TIME_ZONE);
+
+    // next = earliest >= today
+    if (k >= todayKey && (nextKey == null || k < nextKey)) {
+      nextKey = k;
       nextRow = r;
     }
 
-    if (t <= todayT && t > prevT) {
-      prevT = t;
+    // prev = latest <= today
+    if (k <= todayKey && (prevKey == null || k > prevKey)) {
+      prevKey = k;
       prevRow = r;
     }
   }
 
-  // Prefer “current week” (next upcoming week ending). Otherwise fall back.
   return nextRow ?? prevRow;
 }
 
