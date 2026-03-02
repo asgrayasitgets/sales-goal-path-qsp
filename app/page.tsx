@@ -6,6 +6,9 @@ type MonthlyWeeklyBlock = {
   revenue: { target: number | null; actual: number | null };
   quotesCount: { target: number | null; actual: number | null };
   quotesValue: { target: number | null; actual: number | null };
+  jobsLandedCount: { target: number | null; actual: number | null };
+  jobsLandedValue: { target: number | null; actual: number | null };
+
   sourceRow: number;
 };
 
@@ -47,13 +50,25 @@ function formatPercent(n: number | null) {
   }).format(n);
 }
 
-function Card({ label, value }: { label: string; value: string }) {
+function Card({
+  label,
+  value,
+  className = "",
+}: {
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-black/5 min-w-0">
-      <div className="text-sm font-semibold tracking-wide text-black/60">
-        {label}
-      </div>
-      <div className="mt-2 font-extrabold leading-none text-[var(--pe-black)] tracking-tight whitespace-nowrap text-[clamp(1.1rem,3.2vw,1.9rem)]">
+    <div
+      className={[
+        "rounded-3xl p-4",
+        "bg-transparent border border-black/25 shadow-none",
+        className,
+      ].join(" ")}
+    >
+      <div className="text-xs font-semibold text-black/60">{label}</div>
+      <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
         {value}
       </div>
     </div>
@@ -90,7 +105,6 @@ function StatusChip({
     </span>
   );
 }
-
 function MetricRow({
   title,
   leftLabel,
@@ -99,6 +113,7 @@ function MetricRow({
   rightValue,
   status,
   accent = "orange",
+  className = "",
 }: {
   title: string;
   leftLabel: string;
@@ -107,55 +122,131 @@ function MetricRow({
   rightValue: string;
   status: "Ahead" | "On Pace" | "Behind";
   accent?: "orange" | "black";
+  className?: string;
 }) {
   const accentBar =
     accent === "orange" ? "bg-[var(--pe-orange)]" : "bg-[var(--pe-black)]";
 
-  return (
-    <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-black/5">
+  const actualNum = Number((leftValue ?? "").replace(/[^0-9.-]+/g, ""));
+  const goalNum = Number((rightValue ?? "").replace(/[^0-9.-]+/g, ""));
+  const ratio =
+    !isNaN(actualNum) && !isNaN(goalNum) && goalNum > 0
+      ? Math.min(actualNum / goalNum, 1.4)
+      : 0;
+
+ 
+    return (
+    <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-black/10">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="text-sm font-extrabold text-black/70">{title}</div>
 
-          <div className="mt-3 flex items-end justify-between gap-8">
-  <div className="max-w-[45%]">
-    <div className="text-xs font-semibold text-black/50">{leftLabel}</div>
-    <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
-      {leftValue}
-    </div>
-  </div>
+          <div className="mt-3 grid w-full grid-cols-2 items-end">
+            <div className="text-left">
+              <div className="text-xs font-semibold text-black/50">{leftLabel}</div>
+              <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
+                {leftValue}
+              </div>
+            </div>
 
-  <div className="ml-auto text-right">
-    <div className="text-xs font-semibold text-black/50">{rightLabel}</div>
-    <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
-      {rightValue}
-    </div>
-  </div>
-</div>
+            <div className="justify-self-end text-right">
+              <div className="text-xs font-semibold text-black/50">{rightLabel}</div>
+              <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
+                {rightValue}
+              </div>
+            </div>
+          </div>
         </div>
 
         <StatusChip status={status} />
       </div>
 
-      {(() => {
-  const actualNum = Number(leftValue?.replace(/[^0-9.-]+/g, ""));
-  const goalNum = Number(rightValue?.replace(/[^0-9.-]+/g, ""));
+      <div className="mt-4 h-2 w-full rounded-full bg-black/10 overflow-hidden">
+        <div
+          className={`h-full ${accentBar} rounded-full transition-all duration-500`}
+          style={{ width: `${ratio * 100}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function MetricRowStacked({
+  title,
+  leftLabel,
+  leftTop,
+  leftBottom,
+  rightLabel,
+  rightTop,
+  rightBottom,
+  status,
+  accent = "orange",
+  className = "",
+}: {
+  title: string;
+  leftLabel: string;
+  leftTop: string;
+  leftBottom: string;
+  rightLabel: string;
+  rightTop: string;
+  rightBottom: string;
+  status: "Ahead" | "On Pace" | "Behind";
+  accent?: "orange" | "black";
+  className?: string;
+}) {
+  const accentBar =
+    accent === "orange" ? "bg-[var(--pe-orange)]" : "bg-[var(--pe-black)]";
+
+  // progress bar uses TOP numbers (count)
+  const actualNum = Number((leftTop ?? "").replace(/[^0-9.-]+/g, ""));
+  const goalNum = Number((rightTop ?? "").replace(/[^0-9.-]+/g, ""));
   const ratio =
     !isNaN(actualNum) && !isNaN(goalNum) && goalNum > 0
       ? Math.min(actualNum / goalNum, 1.4)
       : 0;
 
   return (
+  <div
+    className={[
+      "rounded-2xl p-5 shadow-sm border border-black/10",
+      className && className.trim().length > 0 ? className : "bg-[var(--pe-card)]",
+    ].join(" ")}
+  >
+    <div className="flex items-start justify-between gap-3">
+      {/* LEFT side must stretch full width so Actual/Goal can push apart */}
+      <div className="min-w-0 flex-1">
+        <div className="text-sm font-extrabold text-black/70">{title}</div>
+
+        <div className="mt-3 grid w-full grid-cols-2 items-end">
+          <div className="text-left">
+            <div className="text-xs font-semibold text-black/50">{leftLabel}</div>
+            <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
+              {leftTop}
+            </div>
+            <div className="mt-1 text-sm font-bold text-black/60">{leftBottom}</div>
+          </div>
+
+          <div className="justify-self-end text-right">
+            <div className="text-xs font-semibold text-black/50">{rightLabel}</div>
+            <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
+              {rightTop}
+            </div>
+            <div className="mt-1 text-sm font-bold text-black/60">{rightBottom}</div>
+          </div>
+        </div>
+      </div>
+
+      <StatusChip status={status} />
+    </div>
+
     <div className="mt-4 h-2 w-full rounded-full bg-black/10 overflow-hidden">
       <div
         className={`h-full ${accentBar} rounded-full transition-all duration-500`}
         style={{ width: `${ratio * 100}%` }}
       />
     </div>
-  );
-})()}
-    </div>
-  );
+  </div>
+);
 }
 
 function PaceBar({
@@ -214,7 +305,7 @@ function PaceBar({
           </div>
         </div>
 
-        <div className="text-right">
+        <div className="justify-self-end text-right">
           <div className="text-xs font-semibold text-black/50">Actual vs Expected</div>
           <div className="mt-1 text-sm font-extrabold text-[var(--pe-black)]">
             {Math.round(pct)}%
@@ -303,13 +394,13 @@ async function load() {
   return (
     <main className="min-h-screen bg-[var(--pe-beige)] p-5">
       <div className="mx-auto max-w-md">
-        <div className="rounded-3xl bg-[var(--header-bg)] text-[var(--header-text)] p-5 border border-black/5">
+        <div className="rounded-3xl bg-[var(--header-bg)] text-[var(--header-text)] p-5 border border-black/10 shadow-md">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-xl font-extrabold text-[var(--pe-black)]">
+              <div className="text-xl font-extrabold text-[var(--pe-tan)]">
                 {brandName}
               </div>
-              <div className="mt-1 text-sm text-black/60">
+              <div className="mt-1 text-sm text-pe-tan">
                 Live dashboard powered by Google Sheet data
               </div>
             </div>
@@ -318,8 +409,10 @@ async function load() {
   onClick={load}
   disabled={loading}
   className={`rounded-full px-4 py-2 text-sm font-bold shadow-sm ${
-  loading ? "bg-black/40 text-white" : "bg-[var(--btn-bg)] text-[var(--btn-text)]"
-}`}
+    loading
+      ? "bg-black/40 text-white"
+      : "bg-[var(--btn-bg)] text-[var(--btn-text)]"
+  }`}
 >
   {loading ? "Refreshing..." : "Refresh"}
 </button>
@@ -334,7 +427,7 @@ async function load() {
                   "flex-1 rounded-full px-3 py-2 text-sm font-bold",
                   tab === t
   ? "bg-[var(--tab-active-bg)] text-[var(--tab-active-text)]"
-  : "bg-white/80 text-[var(--header-button-text)] border border-black/10",
+  : "bg-white/90 text-[var(--header-button-text)] border border-black/10",
                 ].join(" ")}
               >
                 {t}
@@ -347,9 +440,18 @@ async function load() {
         {tab === "YTD" && (
           <>
             <div className="mt-5 grid grid-cols-2 gap-3">
-              {ytdCards.map((c) => (
-                <Card key={c.label} label={c.label} value={c.value} />
-              ))}
+             {ytdCards.map((c, i) => (
+  <Card
+    key={c.label}
+    label={c.label}
+    value={c.value}
+    className={
+      i % 2 === 1
+        ? "bg-transparent border border-black/20 shadow-none"
+        : "bg-white border border-black/10 shadow-sm"
+    }
+  />
+))}
             </div>
 
             <div className="mt-4">
@@ -362,94 +464,103 @@ async function load() {
           </>
         )}
 
-        {/* Monthly */}
-        {tab === "Monthly" && (
-          <div className="mt-5 space-y-3">
-            <MetricRow
-              title={`Revenue (${data?.monthly?.month ?? "This Month"})`}
-              leftLabel="Actual"
-              leftValue={formatMoney(data?.monthly?.revenue?.actual ?? null)}
-              rightLabel="Goal"
-              rightValue={formatMoney(data?.monthly?.revenue?.target ?? null)}
-              status={getStatus(
-                data?.monthly?.revenue?.actual ?? null,
-                data?.monthly?.revenue?.target ?? null
-              )}
-              accent="orange"
-            />
+       {/* Monthly */}
+{tab === "Monthly" && (
+  <div className="mt-5 space-y-3">
+    <MetricRow
+      title={`Revenue (${data?.monthly?.month ?? "This Month"})`}
+      leftLabel="Actual"
+      leftValue={formatMoney(data?.monthly?.revenue?.actual ?? null)}
+      rightLabel="Goal"
+      rightValue={formatMoney(data?.monthly?.revenue?.target ?? null)}
+      status={getStatus(
+        data?.monthly?.revenue?.actual ?? null,
+        data?.monthly?.revenue?.target ?? null
+      )}
+      accent="orange"
+    />
 
-            <MetricRow
-              title={`Quotes Count (${data?.monthly?.month ?? "This Month"})`}
-              leftLabel="Actual"
-              leftValue={formatInt(data?.monthly?.quotesCount?.actual ?? null)}
-              rightLabel="Goal"
-              rightValue={formatInt(data?.monthly?.quotesCount?.target ?? null)}
-              status={getStatus(
-                data?.monthly?.quotesCount?.actual ?? null,
-                data?.monthly?.quotesCount?.target ?? null
-              )}
-              accent="black"
-            />
+    <MetricRowStacked
+      title={`Quotes (${data?.monthly?.month ?? "This Month"})`}
+      leftLabel="Actual"
+      leftTop={formatInt(data?.monthly?.quotesCount?.actual ?? null)}
+      leftBottom={formatMoney(data?.monthly?.quotesValue?.actual ?? null)}
+      rightLabel="Goal"
+      rightTop={formatInt(data?.monthly?.quotesCount?.target ?? null)}
+      rightBottom={formatMoney(data?.monthly?.quotesValue?.target ?? null)}
+      status={getStatus(
+        data?.monthly?.quotesCount?.actual ?? null,
+        data?.monthly?.quotesCount?.target ?? null
+      )}
+      accent="black"
+      className="bg-transparent shadow-none border border-black/20"
+    />
 
-            <MetricRow
-              title={`Quotes Value (${data?.monthly?.month ?? "This Month"})`}
-              leftLabel="Actual"
-              leftValue={formatMoney(data?.monthly?.quotesValue?.actual ?? null)}
-              rightLabel="Goal"
-              rightValue={formatMoney(data?.monthly?.quotesValue?.target ?? null)}
-              status={getStatus(
-                data?.monthly?.quotesValue?.actual ?? null,
-                data?.monthly?.quotesValue?.target ?? null
-              )}
-              accent="orange"
-            />
-          </div>
-        )}
+    <MetricRowStacked
+      title={`Jobs Landed (${data?.monthly?.month ?? "This Month"})`}
+      leftLabel="Actual"
+      leftTop={formatInt(data?.monthly?.jobsLandedCount?.actual ?? null)}
+      leftBottom={formatMoney(data?.monthly?.jobsLandedValue?.actual ?? null)}
+      rightLabel="Goal"
+      rightTop={formatInt(data?.monthly?.jobsLandedCount?.target ?? null)}
+      rightBottom={formatMoney(data?.monthly?.jobsLandedValue?.target ?? null)}
+      status={getStatus(
+        data?.monthly?.jobsLandedCount?.actual ?? null,
+        data?.monthly?.jobsLandedCount?.target ?? null
+      )}
+      accent="orange"
+    />
+  </div>
+)}
 
-        {/* Weekly */}
-        {tab === "Weekly" && (
-          <div className="mt-5 space-y-3">
-            <MetricRow
-              title={`Revenue (Week Ending ${data?.weekly?.weekEnding ?? ""})`}
-              leftLabel="Actual"
-              leftValue={formatMoney(data?.weekly?.revenue?.actual ?? null)}
-              rightLabel="Goal"
-              rightValue={formatMoney(data?.weekly?.revenue?.target ?? null)}
-              status={getStatus(
-                data?.weekly?.revenue?.actual ?? null,
-                data?.weekly?.revenue?.target ?? null
-              )}
-              accent="orange"
-            />
+{/* Weekly */}
+{tab === "Weekly" && (
+  <div className="mt-5 space-y-3">
+    <MetricRow
+      title={`Revenue (Week Ending ${data?.weekly?.weekEnding ?? ""})`}
+      leftLabel="Actual"
+      leftValue={formatMoney(data?.weekly?.revenue?.actual ?? null)}
+      rightLabel="Goal"
+      rightValue={formatMoney(data?.weekly?.revenue?.target ?? null)}
+      status={getStatus(
+        data?.weekly?.revenue?.actual ?? null,
+        data?.weekly?.revenue?.target ?? null
+      )}
+      accent="orange"
+    />
 
-            <MetricRow
-              title={`Quotes Count (Week Ending ${data?.weekly?.weekEnding ?? ""})`}
-              leftLabel="Actual"
-              leftValue={formatInt(data?.weekly?.quotesCount?.actual ?? null)}
-              rightLabel="Goal"
-              rightValue={formatInt(data?.weekly?.quotesCount?.target ?? null)}
-              status={getStatus(
-                data?.weekly?.quotesCount?.actual ?? null,
-                data?.weekly?.quotesCount?.target ?? null
-              )}
-              accent="black"
-            />
+    <MetricRowStacked
+      title={`Quotes (Week Ending ${data?.weekly?.weekEnding ?? ""})`}
+      leftLabel="Actual"
+      leftTop={formatInt(data?.weekly?.quotesCount?.actual ?? null)}
+      leftBottom={formatMoney(data?.weekly?.quotesValue?.actual ?? null)}
+      rightLabel="Goal"
+      rightTop={formatInt(data?.weekly?.quotesCount?.target ?? null)}
+      rightBottom={formatMoney(data?.weekly?.quotesValue?.target ?? null)}
+      status={getStatus(
+        data?.weekly?.quotesCount?.actual ?? null,
+        data?.weekly?.quotesCount?.target ?? null
+      )}
+      accent="black"
+      className="bg-transparent shadow-none border border-black/20"
+    />
 
-            <MetricRow
-              title={`Quotes Value (Week Ending ${data?.weekly?.weekEnding ?? ""})`}
-              leftLabel="Actual"
-              leftValue={formatMoney(data?.weekly?.quotesValue?.actual ?? null)}
-              rightLabel="Goal"
-              rightValue={formatMoney(data?.weekly?.quotesValue?.target ?? null)}
-              status={getStatus(
-                data?.weekly?.quotesValue?.actual ?? null,
-                data?.weekly?.quotesValue?.target ?? null
-              )}
-              accent="orange"
-            />
-          </div>
-        )}
-
+    <MetricRowStacked
+      title={`Jobs Landed (Week Ending ${data?.weekly?.weekEnding ?? ""})`}
+      leftLabel="Actual"
+      leftTop={formatInt(data?.weekly?.jobsLandedCount?.actual ?? null)}
+      leftBottom={formatMoney(data?.weekly?.jobsLandedValue?.actual ?? null)}
+      rightLabel="Goal"
+      rightTop={formatInt(data?.weekly?.jobsLandedCount?.target ?? null)}
+      rightBottom={formatMoney(data?.weekly?.jobsLandedValue?.target ?? null)}
+      status={getStatus(
+        data?.weekly?.jobsLandedCount?.actual ?? null,
+        data?.weekly?.jobsLandedCount?.target ?? null
+      )}
+      accent="orange"
+    />
+  </div>
+)}
         <div className="mt-4 text-xs text-black/50 text-center">
           {error ? (
             <span className="text-red-600">{error}</span>
