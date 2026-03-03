@@ -63,11 +63,11 @@ function Card({
     <div
       className={[
         "rounded-3xl p-4",
-        "bg-transparent border border-black/25 shadow-none",
+        "bg-transparent border border-[color:var(--pe-border)] shadow-none",
         className,
       ].join(" ")}
     >
-      <div className="text-xs font-semibold text-black/60">{label}</div>
+      <div className="text-xs font-semibold text-[color:var(--pe-muted)]">{label}</div>
       <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
         {value}
       </div>
@@ -134,24 +134,36 @@ function MetricRow({
       ? Math.min(actualNum / goalNum, 1.4)
       : 0;
 
- 
-    return (
-    <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-black/10">
+  return (
+    <div
+      className={[
+        "rounded-2xl p-5 shadow-sm border",
+        className && className.trim().length > 0
+          ? className
+          : "bg-[var(--pe-card)] border-[color:var(--pe-border)]",
+      ].join(" ")}
+    >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-extrabold text-black/70">{title}</div>
+          <div className="text-sm font-extrabold text-[color:var(--pe-muted)]">
+            {title}
+          </div>
 
           <div className="mt-3 grid w-full grid-cols-2 items-end">
             <div className="text-left">
-              <div className="text-xs font-semibold text-black/50">{leftLabel}</div>
-              <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
+              <div className="text-xs font-semibold text-[color:var(--pe-muted)]">
+                {leftLabel}
+              </div>
+              <div className="mt-1 text-lg font-extrabold text-[color:var(--pe-black)]">
                 {leftValue}
               </div>
             </div>
 
             <div className="justify-self-end text-right">
-              <div className="text-xs font-semibold text-black/50">{rightLabel}</div>
-              <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
+              <div className="text-xs font-semibold text-[color:var(--pe-muted)]">
+                {rightLabel}
+              </div>
+              <div className="mt-1 text-lg font-extrabold text-[color:var(--pe-black)]">
                 {rightValue}
               </div>
             </div>
@@ -161,7 +173,7 @@ function MetricRow({
         <StatusChip status={status} />
       </div>
 
-      <div className="mt-4 h-2 w-full rounded-full bg-black/10 overflow-hidden">
+      <div className="mt-4 h-2 w-full rounded-full bg-[color:var(--pe-border)] overflow-hidden">
         <div
           className={`h-full ${accentBar} rounded-full transition-all duration-500`}
           style={{ width: `${ratio * 100}%` }}
@@ -170,6 +182,7 @@ function MetricRow({
     </div>
   );
 }
+
 
 function MetricRowStacked({
   title,
@@ -206,48 +219,60 @@ function MetricRowStacked({
       : 0;
 
   return (
-  <div
-    className={[
-      "rounded-2xl p-5 shadow-sm border border-black/10",
-      className && className.trim().length > 0 ? className : "bg-[var(--pe-card)]",
-    ].join(" ")}
-  >
-    <div className="flex items-start justify-between gap-3">
-      {/* LEFT side must stretch full width so Actual/Goal can push apart */}
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-extrabold text-black/70">{title}</div>
-
-        <div className="mt-3 grid w-full grid-cols-2 items-end">
-          <div className="text-left">
-            <div className="text-xs font-semibold text-black/50">{leftLabel}</div>
-            <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
-              {leftTop}
-            </div>
-            <div className="mt-1 text-sm font-bold text-black/60">{leftBottom}</div>
+    <div
+      className={[
+        "rounded-2xl p-5 shadow-sm border",
+        className && className.trim().length > 0
+          ? className
+          : "bg-[var(--pe-card)] border-[color:var(--pe-border)]",
+      ].join(" ")}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="text-sm font-extrabold text-[color:var(--pe-muted)]">
+            {title}
           </div>
 
-          <div className="justify-self-end text-right">
-            <div className="text-xs font-semibold text-black/50">{rightLabel}</div>
-            <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
-              {rightTop}
+          <div className="mt-3 grid w-full grid-cols-2 items-end">
+            <div className="text-left">
+              <div className="text-xs font-semibold text-[color:var(--pe-muted)]">
+                {leftLabel}
+              </div>
+              <div className="mt-1 text-lg font-extrabold text-[color:var(--pe-black)]">
+                {leftTop}
+              </div>
+              <div className="mt-1 text-sm font-bold text-[color:var(--pe-muted)]">
+                {leftBottom}
+              </div>
             </div>
-            <div className="mt-1 text-sm font-bold text-black/60">{rightBottom}</div>
+
+            <div className="justify-self-end text-right">
+              <div className="text-xs font-semibold text-[color:var(--pe-muted)]">
+                {rightLabel}
+              </div>
+              <div className="mt-1 text-lg font-extrabold text-[color:var(--pe-black)]">
+                {rightTop}
+              </div>
+              <div className="mt-1 text-sm font-bold text-[color:var(--pe-muted)]">
+                {rightBottom}
+              </div>
+            </div>
           </div>
         </div>
+
+        <StatusChip status={status} />
       </div>
 
-      <StatusChip status={status} />
+      <div className="mt-4 h-2 w-full rounded-full bg-[color:var(--pe-border)] overflow-hidden">
+        <div
+          className={`h-full ${accentBar} rounded-full transition-all duration-500`}
+          style={{ width: `${ratio * 100}%` }}
+        />
+      </div>
     </div>
-
-    <div className="mt-4 h-2 w-full rounded-full bg-black/10 overflow-hidden">
-      <div
-        className={`h-full ${accentBar} rounded-full transition-all duration-500`}
-        style={{ width: `${ratio * 100}%` }}
-      />
-    </div>
-  </div>
-);
+  );
 }
+
 
 function PaceBar({
   actualYTD,
@@ -261,11 +286,11 @@ function PaceBar({
 
   if (actual == null || expected == null || expected === 0) {
     return (
-      <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-black/5">
-        <div className="text-sm font-semibold tracking-wide text-black/60">
+      <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-[color:var(--pe-border)]">
+        <div className="text-sm font-semibold tracking-wide text-[color:var(--pe-muted)]">
           Pace Status
         </div>
-        <div className="mt-2 text-sm text-black/60">—</div>
+        <div className="mt-2 text-sm text-[color:var(--pe-muted)]">—</div>
       </div>
     );
   }
@@ -294,10 +319,10 @@ function PaceBar({
   const diff = actual - expected;
 
   return (
-    <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-black/5">
+    <div className="rounded-2xl bg-[var(--pe-card)] p-5 shadow-sm border border-[color:var(--pe-border)]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold tracking-wide text-black/60">
+          <div className="text-sm font-semibold tracking-wide text-[color:var(--pe-muted)]">
             Pace Status
           </div>
           <div className="mt-1 text-lg font-extrabold text-[var(--pe-black)]">
@@ -305,34 +330,34 @@ function PaceBar({
           </div>
         </div>
 
-        <div className="justify-self-end text-right">
-          <div className="text-xs font-semibold text-black/50">Actual vs Expected</div>
+        <div className="text-right">
+          <div className="text-xs font-semibold text-[color:var(--pe-muted)]">Actual vs Expected</div>
           <div className="mt-1 text-sm font-extrabold text-[var(--pe-black)]">
             {Math.round(pct)}%
           </div>
         </div>
       </div>
 
-      <div className="mt-3 h-3 w-full rounded-full bg-black/10 overflow-hidden">
+      <div className="mt-3 h-3 w-full rounded-full bg-[color:var(--pe-border)] overflow-hidden">
         <div className={`h-full ${colorClass}`} style={{ width: fillWidth }} />
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
-        <div className="text-black/60">
+        <div className="text-[color:var(--pe-muted)]">
           Actual: <span className="font-bold text-[var(--pe-black)]">{formatMoney(actual)}</span>
         </div>
-        <div className="text-black/60 text-right">
+        <div className="text-[color:var(--pe-muted)] text-right">
           Expected:{" "}
           <span className="font-bold text-[var(--pe-black)]">{formatMoney(expected)}</span>
         </div>
 
-        <div className="text-black/60">
+        <div className="text-[color:var(--pe-muted)]">
           Difference:{" "}
           <span className="font-bold text-[var(--pe-black)]">
             {formatMoney(diff)}
           </span>
         </div>
-        <div className="text-black/60 text-right">
+        <div className="text-[color:var(--pe-muted)] text-right">
           Ratio:{" "}
           <span className="font-bold text-[var(--pe-black)]">
             {ratio.toFixed(2)}x
@@ -394,7 +419,7 @@ async function load() {
   return (
     <main className="min-h-screen bg-[var(--pe-beige)] p-5">
       <div className="mx-auto max-w-md">
-        <div className="rounded-3xl bg-[var(--header-bg)] text-[var(--header-text)] p-5 border border-black/10 shadow-md">
+        <div className="rounded-3xl bg-[var(--header-bg)] text-[var(--header-text)] p-5 border border-[color:var(--pe-border)] shadow-md">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="text-xl font-extrabold text-[var(--pe-tan)]">
@@ -410,7 +435,7 @@ async function load() {
   disabled={loading}
   className={`rounded-full px-4 py-2 text-sm font-bold shadow-sm ${
     loading
-      ? "bg-black/40 text-white"
+      ? "bg-[color:var(--pe-border)] text-white"
       : "bg-[var(--btn-bg)] text-[var(--btn-text)]"
   }`}
 >
@@ -427,7 +452,7 @@ async function load() {
                   "flex-1 rounded-full px-3 py-2 text-sm font-bold",
                   tab === t
   ? "bg-[var(--tab-active-bg)] text-[var(--tab-active-text)]"
-  : "bg-white/90 text-[var(--header-button-text)] border border-black/10",
+  : "bg-white/90 text-[var(--header-button-text)] border border-[color:var(--pe-border)]",
                 ].join(" ")}
               >
                 {t}
@@ -447,8 +472,8 @@ async function load() {
     value={c.value}
     className={
       i % 2 === 1
-        ? "bg-transparent border border-black/20 shadow-none"
-        : "bg-white border border-black/10 shadow-sm"
+        ? "bg-transparent border border-[color:var(--pe-border)] shadow-none"
+        : "bg-white border border-[color:var(--pe-border)] shadow-sm"
     }
   />
 ))}
@@ -493,7 +518,7 @@ async function load() {
         data?.monthly?.quotesCount?.target ?? null
       )}
       accent="black"
-      className="bg-transparent shadow-none border border-black/20"
+      className="bg-transparent shadow-none border border-[color:var(--pe-border)]"
     />
 
     <MetricRowStacked
@@ -542,7 +567,7 @@ async function load() {
         data?.weekly?.quotesCount?.target ?? null
       )}
       accent="black"
-      className="bg-transparent shadow-none border border-black/20"
+      className="bg-transparent shadow-none border border-[color:var(--pe-border)]"
     />
 
     <MetricRowStacked
@@ -561,7 +586,7 @@ async function load() {
     />
   </div>
 )}
-        <div className="mt-4 text-xs text-black/50 text-center">
+        <div className="mt-4 text-xs text-[color:var(--pe-muted)] text-center">
           {error ? (
             <span className="text-red-600">{error}</span>
           ) : data?.fetchedAt ? (
