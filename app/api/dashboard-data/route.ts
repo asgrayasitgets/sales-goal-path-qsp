@@ -233,7 +233,8 @@ export async function GET() {
 
   const csvText = await res.text();
   const grid = csvToGrid(csvText);
-
+  const maxCols = Math.max(...grid.map((r) => r.length));
+  const gridPadded = grid.map((r) => r.concat(Array(maxCols - r.length).fill("")));
   // Base KPIs
   const salesGoalAnnual = toNumber(getCellA1(grid, "C3"));
   const lastYearRevenue = toNumber(getCellA1(grid, "C6"));
@@ -275,35 +276,57 @@ const monthly =
           actual: toNumber(getCellRC(grid, monthRow, 10)),
         },
         quotesValue: {
-          target: toNumber(getCellRC(grid, monthRow, 7)), // <-- change if needed
-          actual: toNumber(getCellRC(grid, monthRow, 9)),  // <-- change if needed
+          target: toNumber(getCellRC(grid, monthRow, 7)),
+          actual: toNumber(getCellRC(grid, monthRow, 9)),
         },
+
+        // ✅ Jobs Landed
+        jobsLandedValue: {
+  target: toNumber(getCellRC(gridPadded, monthRow, 11)), // K
+  actual: toNumber(getCellRC(gridPadded, monthRow, 13)), // M
+},
+jobsLandedCount: {
+  target: toNumber(getCellRC(gridPadded, monthRow, 12)), // L
+  actual: toNumber(getCellRC(gridPadded, monthRow, 14)), // N
+},
+
         sourceRow: monthRow,
       };
+  
   // ----- Weekly (CURRENT WEEK) -----
   const todayKey = todayKeyInTimeZone(BUSINESS_TIMEZONE);
   const weekRow = findCurrentWeekRow(grid, todayKey);
 
-  const weekly =
-    weekRow == null
-      ? null
-      : {
-          weekEnding: getCellRC(grid, weekRow, 1),
-          revenue: {
-            target: toNumber(getCellRC(grid, weekRow, 2)), // B
-            actual: toNumber(getCellRC(grid, weekRow, 3)), // C
-          },
-          quotesCount: {
-            target: toNumber(getCellRC(grid, weekRow, 8)),  // H
-            actual: toNumber(getCellRC(grid, weekRow, 10)), // J
-          },
-          quotesValue: {
-            target: toNumber(getCellRC(grid, weekRow, 7)), // G (assumed)
-            actual: toNumber(getCellRC(grid, weekRow, 9)),  // I (assumed)
-          },
-          sourceRow: weekRow,
-        };
+ const weekly =
+  weekRow == null
+    ? null
+    : {
+        weekEnding: getCellRC(grid, weekRow, 1),
+        revenue: {
+          target: toNumber(getCellRC(grid, weekRow, 2)), // B
+          actual: toNumber(getCellRC(grid, weekRow, 3)), // C
+        },
+        quotesCount: {
+          target: toNumber(getCellRC(grid, weekRow, 8)), // H
+          actual: toNumber(getCellRC(grid, weekRow, 10)), // J
+        },
+        quotesValue: {
+          target: toNumber(getCellRC(grid, weekRow, 7)), // G (assumed)
+          actual: toNumber(getCellRC(grid, weekRow, 9)), // I (assumed)
+        },
 
+       jobsLandedValue: {
+  target: toNumber(getCellRC(gridPadded, weekRow, 11)), // K
+  actual: toNumber(getCellRC(gridPadded, weekRow, 13)), // M
+},
+jobsLandedCount: {
+  target: toNumber(getCellRC(gridPadded, weekRow, 12)), // L
+  actual: toNumber(getCellRC(gridPadded, weekRow, 14)), // N
+},
+
+        sourceRow: weekRow,
+      };
+  
   return NextResponse.json({
     salesGoalAnnual,
     salesYTD,
@@ -319,12 +342,36 @@ const monthly =
     weekly,
 
     debug: {
-      businessTimeZone: BUSINESS_TIMEZONE,
-      todayKey,
-      weeklyRange: `${WEEKLY_START_ROW}-${WEEKLY_END_ROW}`,
-      pickedWeeklyRow: weekRow,
-      pickedWeekEnding: weekRow ? getCellRC(grid, weekRow, 1) : null,
-    },
+  businessTimeZone: BUSINESS_TIMEZONE,
+  todayKey,
+  weeklyRange: `${WEEKLY_START_ROW}-${WEEKLY_END_ROW}`,
+  pickedWeeklyRow: weekRow,
+  pickedWeekEnding: weekRow ? getCellRC(grid, weekRow, 1) : null,
+
+  // ===== Jobs Landed debug =====
+  monthRow,
+  monthRowLen: monthRow ? (grid[monthRow - 1]?.length ?? null) : null,
+  jobsMonthlyRaw:
+    monthRow == null
+      ? null
+      : {
+          K: getCellRC(grid, monthRow, 11),
+          L: getCellRC(grid, monthRow, 12),
+          M: getCellRC(grid, monthRow, 13),
+          N: getCellRC(grid, monthRow, 14),
+        },
+
+  weekRowLen: weekRow ? (grid[weekRow - 1]?.length ?? null) : null,
+  jobsWeeklyRaw:
+    weekRow == null
+      ? null
+      : {
+          K: getCellRC(grid, weekRow, 11),
+          L: getCellRC(grid, weekRow, 12),
+          M: getCellRC(grid, weekRow, 13),
+          N: getCellRC(grid, weekRow, 14),
+        },
+},
 
     fetchedAt: new Date().toISOString(),
   });
