@@ -3,17 +3,48 @@
 @tailwind utilities;
 
 :root {
-  /* Brand-driven theme (per Vercel project env vars) */
-    --btn-bg: #212721;
-  --btn-text: #ffffff;
-  --tab-active-bg: #212721;
-  --tab-active-text: #ffffff;--pe-beige: var(--brand-bg, #F1EFE7);
-  --pe-black: var(--brand-text, #212721);
-  --pe-orange: var(--brand-accent, #CAB448);
-  --pe-muted: var(--brand-muted, #F1EFE7);
+  /* ========= Brand tokens (set by layout.tsx from Vercel env vars) ========= */
+  --brand-bg: #F1EFE7;
+  --brand-surface: rgba(255, 255, 255, 0.65);
+  --brand-surface-strong: #212721;
 
-  /* Card surface */
-  --pe-card: var(--brand-card, rgba(255, 255, 255, 0.65));
+  --brand-text: #212721;
+  --brand-text-muted: rgba(33, 39, 33, 0.70);
+  --brand-border: rgba(33, 39, 33, 0.14);
+
+  --brand-accent: #CAB448;
+  --brand-accent-contrast: #ffffff;
+
+  --brand-success: #16a34a;
+  --brand-warning: #f59e0b;
+  --brand-danger: #ef4444;
+
+  /* ========= App variables used by components ========= */
+  --pe-beige: var(--brand-bg);
+  --pe-card: var(--brand-surface);
+  --pe-card-dark: var(--brand-surface-strong);
+
+  --pe-black: var(--brand-text);
+  --pe-muted: var(--brand-text-muted);
+  --pe-border: var(--brand-border);
+
+  --pe-orange: var(--brand-accent);
+  --pe-accent-contrast: var(--brand-accent-contrast);
+
+  --pe-success: var(--brand-success);
+  --pe-warning: var(--brand-warning);
+  --pe-danger: var(--brand-danger);
+  --pe-ink-light: #F1EFE7;
+
+  /* ========= Buttons / Tabs / Header (optional; layout.tsx can override) ========= */
+  --btn-bg: var(--brand-surface-strong);
+  --btn-text: #ffffff;
+
+  --tab-active-bg: var(--brand-surface-strong);
+  --tab-active-text: #ffffff;
+
+  --tab-inactive-bg: var(--brand-surface);
+  --tab-inactive-text: var(--brand-text);
 }
 
 html, body {
