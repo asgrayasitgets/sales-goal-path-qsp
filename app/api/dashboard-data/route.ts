@@ -271,10 +271,8 @@ export async function GET() {
   // ----- Monthly -----
   const today = new Date();
   // ----- Monthly (current month in BUSINESS_TIMEZONE) -----
-const { monthName: currentMonthName, monthNumber: currentMonthNumber, year: currentYear } =
-  currentMonthNameInTimeZone(BUSINESS_TIMEZONE);
-
 const monthRow = findMonthRow(grid, currentMonthName);
+
 
 // Column mapping (1-based):
 // Revenue: target=B, actual=C
