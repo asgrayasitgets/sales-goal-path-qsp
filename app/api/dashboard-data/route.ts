@@ -240,11 +240,31 @@ export async function GET() {
   const lastYearRevenue = toNumber(getCellA1(grid, "C6"));
   const conversionRate = toNumber(getCellA1(grid, "C16"));
 
-  // Pace inputs (your plan vs actual ranges)
-  const ytdActualRevenue = sumRangeSameColumn(grid, "C57", "C64");
-  const ytdExpectedRevenue = sumRangeSameColumn(grid, "B57", "B64");
+  
+  // YTD from monthly table rows 40-51, including current month
+  const {
+    monthName: currentMonthName,
+    monthNumber: currentMonthNumber,
+    year: currentYear,
+  } = currentMonthNameInTimeZone(BUSINESS_TIMEZONE);
+
+  const currentMonthRow = findMonthRow(grid, currentMonthName);
+
+  let ytdActualRevenue = 0;
+  let ytdExpectedRevenue = 0;
+
+  if (currentMonthRow != null) {
+    for (let row = 40; row <= currentMonthRow; row++) {
+      ytdExpectedRevenue += toNumber(getCellRC(grid, row, 2)) ?? 0; // B = target revenue
+      ytdActualRevenue += toNumber(getCellRC(grid, row, 3)) ?? 0;   // C = actual revenue
+    }
+
+    ytdActualRevenue = round2(ytdActualRevenue);
+    ytdExpectedRevenue = round2(ytdExpectedRevenue);
+  }
 
   const salesYTD = ytdActualRevenue;
+
   const percentOfGoal =
     salesGoalAnnual && salesGoalAnnual > 0 ? round2(salesYTD / salesGoalAnnual) : null;
 
