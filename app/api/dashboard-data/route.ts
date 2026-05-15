@@ -155,31 +155,34 @@ function findMonthRow(grid: string[][], monthName: string): number | null {
   return null;
 }
 
-function parseSheetDateToKey(value: string): number | null {
+function parseSheetDateToKey(value: string, fallbackYear: number): number | null {
   const s = (value ?? "").toString().trim();
   if (!s) return null;
 
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-
-  if (m) {
-    const mm = parseInt(m[1], 10);
-    const dd = parseInt(m[2], 10);
-    let yy = parseInt(m[3], 10);
-
+  // MM/DD/YYYY or M/D/YYYY
+  const fullDate = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (fullDate) {
+    const mm = parseInt(fullDate[1], 10);
+    const dd = parseInt(fullDate[2], 10);
+    let yy = parseInt(fullDate[3], 10);
     if (yy < 100) yy += 2000;
-
     return yy * 10000 + mm * 100 + dd;
   }
 
-  const t = Date.parse(s);
+  // Month name without year, like "May 17"
+  const monthDay = s.match(/^([A-Za-z]+)\s+(\d{1,2})$/);
+  if (monthDay) {
+    const monthNames = [
+      "january", "february", "march", "april", "may", "june",
+      "july", "august", "september", "october", "november", "december"
+    ];
 
-  if (!Number.isNaN(t)) {
-    const d = new Date(t);
-    const yy = d.getUTCFullYear();
-    const mm = d.getUTCMonth() + 1;
-    const dd = d.getUTCDate();
-
-    return yy * 10000 + mm * 100 + dd;
+    const monthIndex = monthNames.indexOf(monthDay[1].toLowerCase());
+    if (monthIndex >= 0) {
+      const mm = monthIndex + 1;
+      const dd = parseInt(monthDay[2], 10);
+      return fallbackYear * 10000 + mm * 100 + dd;
+    }
   }
 
   return null;
