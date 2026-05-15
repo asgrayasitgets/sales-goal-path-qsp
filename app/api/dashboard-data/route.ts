@@ -159,7 +159,6 @@ function parseSheetDateToKey(value: string, fallbackYear: number): number | null
   const s = (value ?? "").toString().trim();
   if (!s) return null;
 
-  // MM/DD/YYYY or M/D/YYYY
   const fullDate = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
   if (fullDate) {
     const mm = parseInt(fullDate[1], 10);
@@ -169,7 +168,6 @@ function parseSheetDateToKey(value: string, fallbackYear: number): number | null
     return yy * 10000 + mm * 100 + dd;
   }
 
-  // Month name without year, like "May 17"
   const monthDay = s.match(/^([A-Za-z]+)\s+(\d{1,2})$/);
   if (monthDay) {
     const monthNames = [
