@@ -208,12 +208,12 @@ function findCurrentWeekRow(grid: string[][], todayKey: number): number | null {
   let prevRow: number | null = null;
   let prevKey: number | null = null;
 
-  for (let r = WEEKLY_START_ROW; r <= WEEKLY_END_ROW; r++) {
-    const raw = getCellRC(grid, r, 1);
-    const currentYear = Math.floor(todayKey / 10000);
-const key = parseSheetDateToKey(raw, currentYear);
+for (let r = WEEKLY_START_ROW; r <= WEEKLY_END_ROW; r++) {
+  const raw = getCellRC(grid, r, 1);
+  const currentYear = Math.floor(todayKey / 10000);
+  const key = parseSheetDateToKey(raw, currentYear);
 
-    if (key == null) continue;
+  if (key == null) continue;
 
     // Current/in-progress week: first week-ending date greater than or equal to today
     if (key >= todayKey && (nextKey == null || key < nextKey)) {
