@@ -212,7 +212,8 @@ function findCurrentWeekRow(grid: string[][], todayKey: number): number | null {
 
   for (let r = WEEKLY_START_ROW; r <= WEEKLY_END_ROW; r++) {
     const raw = getCellRC(grid, r, 1);
-    const key = parseSheetDateToKey(raw);
+    const currentYear = Math.floor(todayKey / 10000);
+const key = parseSheetDateToKey(raw, currentYear);
 
     if (key == null) continue;
 
