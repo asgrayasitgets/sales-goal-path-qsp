@@ -481,8 +481,8 @@ async function load() {
 
             <div className="mt-4">
               <PaceBar
-  actualYTD={data?.weekly?.revenue?.actual ?? null}
-  expectedYTD={data?.weekly?.revenue?.target ?? null}
+  actualYTD={data?.ytdActualRevenue ?? null}
+  expectedYTD={data?.ytdExpectedRevenue ?? null}
 />
               
             </div>
