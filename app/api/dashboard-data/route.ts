@@ -155,76 +155,100 @@ function findMonthRow(grid: string[][], monthName: string): number | null {
   return null;
 }
 
-function parseSheetDateToKey(value: string, fallbackYear: number): number | null {
+function todayKeyInTimeZone(timeZone: string): number {
+  const { year, month, day } = datePartsInTimeZone(timeZone);
+  return year * 10000 + month * 100 + day;
+}
+
+function parseSheetDateToKey(
+  value: string,
+  fallbackYear: number
+): number | null {
   const s = (value ?? "").toString().trim();
   if (!s) return null;
 
+  // Handles 5/17/2026 or 05/17/2026
   const fullDate = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
   if (fullDate) {
     const mm = parseInt(fullDate[1], 10);
     const dd = parseInt(fullDate[2], 10);
     let yy = parseInt(fullDate[3], 10);
+
     if (yy < 100) yy += 2000;
+
     return yy * 10000 + mm * 100 + dd;
   }
 
-  const monthDay = s.match(/^([A-Za-z]+)\s+(\d{1,2})$/);
+  // Handles May 17, May 17 2026, May 17, 2026
+  const monthDay = s.match(/^([A-Za-z]+)\s+(\d{1,2})(?:,?\s+(\d{2,4}))?$/);
   if (monthDay) {
     const monthNames = [
-      "january", "february", "march", "april", "may", "june",
-      "july", "august", "september", "october", "november", "december"
+      "january",
+      "february",
+      "march",
+      "april",
+      "may",
+      "june",
+      "july",
+      "august",
+      "september",
+      "october",
+      "november",
+      "december",
     ];
 
     const monthIndex = monthNames.indexOf(monthDay[1].toLowerCase());
+
     if (monthIndex >= 0) {
       const mm = monthIndex + 1;
       const dd = parseInt(monthDay[2], 10);
-      return fallbackYear * 10000 + mm * 100 + dd;
+      let yy = monthDay[3] ? parseInt(monthDay[3], 10) : fallbackYear;
+
+      if (yy < 100) yy += 2000;
+
+      return yy * 10000 + mm * 100 + dd;
     }
+  }
+
+  // Last fallback for dates Google may export differently
+  const parsed = Date.parse(s);
+  if (!Number.isNaN(parsed)) {
+    const d = new Date(parsed);
+    const yy = d.getUTCFullYear();
+    const mm = d.getUTCMonth() + 1;
+    const dd = d.getUTCDate();
+
+    return yy * 10000 + mm * 100 + dd;
   }
 
   return null;
 }
 
-function todayKeyInTimeZone(timeZone: string): number {
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(new Date());
-
-  const y = Number(parts.find((p) => p.type === "year")?.value);
-  const m = Number(parts.find((p) => p.type === "month")?.value);
-  const d = Number(parts.find((p) => p.type === "day")?.value);
-
-  return y * 10000 + m * 100 + d;
-}
-
 function findCurrentWeekRow(grid: string[][], todayKey: number): number | null {
+  const currentYear = Math.floor(todayKey / 10000);
+
   let nextRow: number | null = null;
   let nextKey: number | null = null;
 
   let prevRow: number | null = null;
   let prevKey: number | null = null;
 
-for (let r = WEEKLY_START_ROW; r <= WEEKLY_END_ROW; r++) {
-  const raw = getCellRC(grid, r, 1);
-  const currentYear = Math.floor(todayKey / 10000);
-  const key = parseSheetDateToKey(raw, currentYear);
+  for (let row = WEEKLY_START_ROW; row <= WEEKLY_END_ROW; row++) {
+    const rawWeekEnding = getCellRC(grid, row, 1);
+    const key = parseSheetDateToKey(rawWeekEnding, currentYear);
 
-  if (key == null) continue;
+    if (key == null) continue;
 
-    // Current/in-progress week: first week-ending date greater than or equal to today
+    // Current week = first week-ending date greater than or equal to today
     if (key >= todayKey && (nextKey == null || key < nextKey)) {
       nextKey = key;
-      nextRow = r;
+      nextRow = row;
     }
 
-    // Fallback: latest completed week
+    // Fallback = most recent completed week
     if (key <= todayKey && (prevKey == null || key > prevKey)) {
       prevKey = key;
-      prevRow = r;
+      prevRow = row;
     }
   }
 
@@ -249,8 +273,8 @@ function sumWeeklyRevenueToCurrentWeek(
   let ytdActualRevenue = 0;
 
   for (let row = WEEKLY_START_ROW; row <= currentWeekRow; row++) {
-    ytdExpectedRevenue += toNumber(getCellRC(grid, row, 2)) ?? 0; // B = weekly target revenue
-    ytdActualRevenue += toNumber(getCellRC(grid, row, 3)) ?? 0; // C = weekly actual revenue
+    ytdExpectedRevenue += toNumber(getCellRC(grid, row, 2)) ?? 0; // B
+    ytdActualRevenue += toNumber(getCellRC(grid, row, 3)) ?? 0; // C
   }
 
   return {
@@ -301,9 +325,6 @@ export async function GET() {
   const todayKey = todayKeyInTimeZone(BUSINESS_TIMEZONE);
   const weekRow = findCurrentWeekRow(grid, todayKey);
 
-  // IMPORTANT:
-  // Pace Status YTD now comes from weekly rows 57–109.
-  // It sums weekly target revenue and weekly actual revenue up to the current week.
   const { ytdExpectedRevenue, ytdActualRevenue } =
     sumWeeklyRevenueToCurrentWeek(grid, weekRow);
 
@@ -416,27 +437,7 @@ export async function GET() {
       monthRow,
       monthRowLen: monthRow ? grid[monthRow - 1]?.length ?? null : null,
 
-      jobsMonthlyRaw:
-        monthRow == null
-          ? null
-          : {
-              K: getCellRC(grid, monthRow, 11),
-              L: getCellRC(grid, monthRow, 12),
-              M: getCellRC(grid, monthRow, 13),
-              N: getCellRC(grid, monthRow, 14),
-            },
-
       weekRowLen: weekRow ? grid[weekRow - 1]?.length ?? null : null,
-
-      jobsWeeklyRaw:
-        weekRow == null
-          ? null
-          : {
-              K: getCellRC(grid, weekRow, 11),
-              L: getCellRC(grid, weekRow, 12),
-              M: getCellRC(grid, weekRow, 13),
-              N: getCellRC(grid, weekRow, 14),
-            },
     },
 
     fetchedAt: new Date().toISOString(),
