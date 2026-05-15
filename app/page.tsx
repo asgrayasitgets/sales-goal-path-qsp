@@ -30,6 +30,7 @@ type DashboardData = {
 
 function formatMoney(n: number | null) {
   if (n === null) return "—";
+
   return new Intl.NumberFormat("en-CA", {
     style: "currency",
     currency: "CAD",
@@ -44,26 +45,11 @@ function formatInt(n: number | null) {
 
 function formatPercent(n: number | null) {
   if (n === null) return "—";
+
   return new Intl.NumberFormat("en-CA", {
     style: "percent",
     maximumFractionDigits: 0,
   }).format(n);
-}
-
-function getExpectedRevenueToCurrentWeek(annualGoal: number | null) {
-  if (annualGoal == null || annualGoal === 0) return null;
-
-  const today = new Date();
-  const startOfYear = new Date(today.getFullYear(), 0, 1);
-
-  const daysPassed =
-    Math.floor(
-      (today.getTime() - startOfYear.getTime()) / (1000 * 60 * 60 * 24)
-    ) + 1;
-
-  const currentWeek = Math.ceil(daysPassed / 7);
-
-  return annualGoal * (currentWeek / 52);
 }
 
 function Card({
@@ -94,11 +80,15 @@ function Card({
 }
 
 function getStatus(actual: number | null, target: number | null) {
-  if (actual == null || target == null || target === 0) return "On Pace" as const;
+  if (actual == null || target == null || target === 0) {
+    return "On Pace" as const;
+  }
+
   const ratio = actual / target;
 
   if (ratio >= 1.05) return "Ahead" as const;
   if (ratio <= 0.95) return "Behind" as const;
+
   return "On Pace" as const;
 }
 
@@ -148,6 +138,7 @@ function MetricRow({
 
   const actualNum = Number((leftValue ?? "").replace(/[^0-9.-]+/g, ""));
   const goalNum = Number((rightValue ?? "").replace(/[^0-9.-]+/g, ""));
+
   const ratio =
     !isNaN(actualNum) && !isNaN(goalNum) && goalNum > 0
       ? Math.min(actualNum / goalNum, 1.4)
@@ -230,6 +221,7 @@ function MetricRowStacked({
 
   const actualNum = Number((leftTop ?? "").replace(/[^0-9.-]+/g, ""));
   const goalNum = Number((rightTop ?? "").replace(/[^0-9.-]+/g, ""));
+
   const ratio =
     !isNaN(actualNum) && !isNaN(goalNum) && goalNum > 0
       ? Math.min(actualNum / goalNum, 1.4)
@@ -430,10 +422,6 @@ export default function Page() {
     ];
   }, [data]);
 
-  const expectedRevenueToCurrentWeek = getExpectedRevenueToCurrentWeek(
-    data?.salesGoalAnnual ?? null
-  );
-
   return (
     <main className="min-h-screen bg-[var(--pe-beige)] p-5">
       <div className="mx-auto max-w-md">
@@ -499,7 +487,7 @@ export default function Page() {
             <div className="mt-4">
               <PaceBar
                 actualYTD={data?.ytdActualRevenue ?? null}
-                expectedYTD={expectedRevenueToCurrentWeek}
+                expectedYTD={data?.ytdExpectedRevenue ?? null}
               />
             </div>
           </>
